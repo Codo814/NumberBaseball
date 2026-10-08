@@ -72,3 +72,13 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Separate repository kept locally
+/NumberBaseball/
+# Local editor and build files
+/.idea/
+/.vscode/
+*.log
+*.tmp
+.env
+.env.*
