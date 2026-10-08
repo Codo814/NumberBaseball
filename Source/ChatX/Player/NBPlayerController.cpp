@@ -4,11 +4,17 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Game/NBGameModeBase.h"
+#include "NBPlayerState.h"
 #include "UI/NBChatInput.h"
 #include "ChatX.h"
+#include "Net/UnrealNetwork.h"
 #include "EngineUtils.h"
 
 
+ANBPlayerController::ANBPlayerController()
+{
+	bReplicates = true;
+}
 void ANBPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -29,6 +35,15 @@ void ANBPlayerController::BeginPlay()
 			ChatInputWidgetInstance->AddToViewport();
 		}
 	}
+
+	if (IsValid(NotificationTextWidgetClass) == true)
+	{
+		NotificationTextWidgetInstance = CreateWidget<UUserWidget>(this, NotificationTextWidgetClass);
+		if (IsValid(NotificationTextWidgetInstance) == true)
+		{
+			NotificationTextWidgetInstance->AddToViewport();
+		}
+	}
 }
 
 void ANBPlayerController::SetChatMessageString(const FString& InChatMessageString)
@@ -38,7 +53,16 @@ void ANBPlayerController::SetChatMessageString(const FString& InChatMessageStrin
 	//PrintChatMessageString(InChatMessageString);
 	if (IsLocalController() == true)
 	{
-		ServerRPCPrintChatMessageString(InChatMessageString);
+		// ServerRPCPrintChatMessageString(InChatMessageString);
+
+		ANBPlayerState* NBPS = GetPlayerState<ANBPlayerState>();
+		if (IsValid(NBPS) == true)
+		{
+			//FString CombinedMessageString = NBPS->PlayerNameString + TEXT(": ") + InChatMessageString;
+			FString CombinedMessageString = NBPS->GetPlayerInfoString() + TEXT(": ") + InChatMessageString;
+
+			ServerRPCPrintChatMessageString(CombinedMessageString);
+		}
 	}
 }
 
@@ -51,6 +75,7 @@ void ANBPlayerController::PrintChatMessageString(const FString& InChatMessageStr
 	ChatXFunctionLibrary::MyPrintString(this, CombinedMessageString, 10.f);
 
 }
+
 
 void ANBPlayerController::ClientRPCPrintChatMessageString_Implementation(const FString& InChatMessageString)
 {
@@ -76,4 +101,10 @@ void ANBPlayerController::ServerRPCPrintChatMessageString_Implementation(const F
 			NBGM->PrintChatMessageString(this, InChatMessageString);
 		}
 	}
+}
+
+void ANBPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, NotificationText);
 }

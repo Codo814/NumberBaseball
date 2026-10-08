@@ -2,6 +2,7 @@
 
 #include "Game/NBGameModeBase.h"
 #include "NBGameStateBase.h"
+#include "Player/NBPlayerState.h"
 #include "Player/NBPlayerController.h"
 #include "EngineUtils.h"
 
@@ -10,18 +11,36 @@ void ANBGameModeBase::OnPostLogin(AController* NewPlayer)
 {
 	Super::OnPostLogin(NewPlayer);
 
-	ANBGameStateBase* NBGameStateBase = GetGameState<ANBGameStateBase>();
-	if (IsValid(NBGameStateBase) == true)
+	//ANBGameStateBase* NBGameStateBase = GetGameState<ANBGameStateBase>();
+	//if (IsValid(NBGameStateBase) == true)
+	//{
+	//	NBGameStateBase->MulticastRPCBroadcastLoginMessage(TEXT("XXXXXXX"));
+	//	ANBPlayerController* NBPlayerController = Cast<ANBPlayerController>(NewPlayer);
+	//	if (IsValid(NBPlayerController) == true)
+	//	{
+	//		AllPlayerControllers.Add(NBPlayerController);
+	//	}
+
+	ANBPlayerController* NBPlayerController = Cast<ANBPlayerController>(NewPlayer);
+	if(IsValid(NBPlayerController) == true)
 	{
-		NBGameStateBase->MulticastRPCBroadcastLoginMessage(TEXT("XXXXXXX"));
-		ANBPlayerController* NBPlayerController = Cast<ANBPlayerController>(NewPlayer);
-		if (IsValid(NBPlayerController) == true)
+		AllPlayerControllers.Add(NBPlayerController);
+
+		NBPlayerController->NotificationText = FText::FromString(TEXT("Connected to the game server."));
+
+		ANBPlayerState* NBPS = NBPlayerController->GetPlayerState<ANBPlayerState>();
+		if (IsValid(NBPS) == true)
 		{
-			AllPlayerControllers.Add(NBPlayerController);
+			NBPS->PlayerNameString = TEXT("Player") + FString::FromInt(AllPlayerControllers.Num());
+		}
+
+		ANBGameStateBase* NBGameStateBase = GetGameState<ANBGameStateBase>();
+		if (IsValid(NBGameStateBase) == true)
+		{
+			NBGameStateBase->MulticastRPCBroadcastLoginMessage(NBPS->PlayerNameString);
 		}
 	}
 }
-
 
 FString ANBGameModeBase::GenerateSecretNumber()
 {
@@ -79,17 +98,17 @@ bool ANBGameModeBase::IsGuessNumberString(const FString& InNumberString)
 
 FString ANBGameModeBase::JudgeResult(const FString& InSecretNumberString, const FString& InGuessNumberString)
 {
-	int32 StrikeConut = 0, BallCount = 0;
+	int32 StrikeCount = 0, BallCount = 0;
 
 	for (int32 i = 0; i < 3; ++i)
 	{
 		if (InSecretNumberString[i] == InGuessNumberString[i])
 		{
-			StrikeConut++;
+			StrikeCount++;
 		}
 		else
 		{
-			FString PlayerGuessChar = FString::Printf(TEXT("%C"), InGuessNumberString[i]);
+			FString PlayerGuessChar = FString::Printf(TEXT("%c"), InGuessNumberString[i]);
 			if (InSecretNumberString.Contains(PlayerGuessChar))
 			{
 				BallCount++;
@@ -97,12 +116,12 @@ FString ANBGameModeBase::JudgeResult(const FString& InSecretNumberString, const 
 		}
 	}
 
-	if (StrikeConut == 0 && BallCount == 0)
+	if (StrikeCount == 0 && BallCount == 0)
 	{
 		return TEXT("OUT");
 	}
 
-	return FString::Printf(TEXT("%dS%dB"), StrikeConut, BallCount);
+	return FString::Printf(TEXT("%dS%dB"), StrikeCount, BallCount);
 }
 
 void ANBGameModeBase::BeginPlay()
@@ -114,10 +133,13 @@ void ANBGameModeBase::BeginPlay()
 
 void ANBGameModeBase::PrintChatMessageString(ANBPlayerController* InChattingPlayerController, const FString& InChatMessageString)
 {
-	const FString& GuessNumberString = InChatMessageString;
+	int Index = InChatMessageString.Len() - 3;
+	FString GuessNumberString = InChatMessageString.RightChop(Index);
 	if (IsGuessNumberString(GuessNumberString) == true)
 	{
 		FString JudgeResultString = JudgeResult(SecretNumberString, GuessNumberString);
+
+		IncreaseGuessCount(InChattingPlayerController);
 		for (TActorIterator<ANBPlayerController> It(GetWorld()); It; ++It)
 		{
 			ANBPlayerController* NBPlayerController = *It;
@@ -125,6 +147,9 @@ void ANBGameModeBase::PrintChatMessageString(ANBPlayerController* InChattingPlay
 			{
 				FString CombinedMessageString = InChatMessageString + TEXT(" -> ") + JudgeResultString;
 				NBPlayerController->ClientRPCPrintChatMessageString(CombinedMessageString);
+
+				int32 StrikeCount = FCString::Atoi(*JudgeResultString.Left(1));
+				JudgeGame(InChattingPlayerController, StrikeCount);
 			}
 		}
 	}
@@ -136,6 +161,73 @@ void ANBGameModeBase::PrintChatMessageString(ANBPlayerController* InChattingPlay
 			if (IsValid(NBPlayerController) == true)
 			{
 				NBPlayerController->ClientRPCPrintChatMessageString(InChatMessageString);
+			}
+		}
+	}
+}
+
+void ANBGameModeBase::IncreaseGuessCount(ANBPlayerController* InChattingPlayerController)
+{
+	ANBPlayerState* NBPS = InChattingPlayerController->GetPlayerState<ANBPlayerState>();
+	if (IsValid(NBPS) == true)
+	{
+		NBPS->CurrentGuessCount++;
+	}
+}
+
+void ANBGameModeBase::ResetGame()
+{
+	SecretNumberString = GenerateSecretNumber();
+
+	for (const auto& ANBPlayerController : AllPlayerControllers)
+	{
+		ANBPlayerState* NBPS = ANBPlayerController->GetPlayerState<ANBPlayerState>();
+		if (IsValid(NBPS) == true)
+		{
+			NBPS->CurrentGuessCount = 0;
+		}
+	}
+}
+
+void ANBGameModeBase::JudgeGame(ANBPlayerController* InChattingPlayerController, int InStrikeCount)
+{
+	if (3 == InStrikeCount)
+	{
+		ANBPlayerState* NBPS = InChattingPlayerController->GetPlayerState<ANBPlayerState>();
+		for (const auto& NBPlayerController : AllPlayerControllers)
+		{
+			if (IsValid(NBPS) == true)
+			{
+				FString CombinedMessageString = NBPS->PlayerNameString + TEXT(" has won the game.");
+				NBPlayerController->NotificationText = FText::FromString(CombinedMessageString);
+
+				ResetGame();
+			}
+		}
+	}
+	else
+	{
+		bool bIsDraw = true;
+		for (const auto& NBPlayerController : AllPlayerControllers)
+		{
+			ANBPlayerState* NBPS = NBPlayerController->GetPlayerState<ANBPlayerState>();
+			if (IsValid(NBPS) == true)
+			{
+				if (NBPS->CurrentGuessCount < NBPS->MaxGuessCount)
+				{
+					bIsDraw = false;
+					break;
+				}
+			}
+		}
+
+		if (true == bIsDraw)
+		{
+			for (const auto& NBPlayerController : AllPlayerControllers)
+			{
+				NBPlayerController->NotificationText = FText::FromString(TEXT("Draw..."));
+
+				ResetGame();
 			}
 		}
 	}
