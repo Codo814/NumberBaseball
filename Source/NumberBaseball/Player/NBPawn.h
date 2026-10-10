@@ -7,7 +7,7 @@
 #include "NBPawn.generated.h"
 
 UCLASS()
-class CHATX_API ANBPawn : public APawn
+class NUMBERBASEBALL_API ANBPawn : public APawn
 {
 	GENERATED_BODY()
 

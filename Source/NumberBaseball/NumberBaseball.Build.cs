@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class ChatX : ModuleRules
+public class NumberBaseball : ModuleRules
 {
-	public ChatX(ReadOnlyTargetRules Target) : base(Target)
+	public NumberBaseball(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
@@ -17,7 +17,7 @@ public class ChatX : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
-		PublicIncludePaths.AddRange(new string[] { "ChatX" });
+		PublicIncludePaths.AddRange(new string[] { "NumberBaseball" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

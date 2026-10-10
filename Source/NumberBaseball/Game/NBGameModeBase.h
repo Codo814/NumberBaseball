@@ -12,7 +12,7 @@ class ANBPlayerController;
  *
  */
 UCLASS()
-class CHATX_API ANBGameModeBase : public AGameModeBase
+class NUMBERBASEBALL_API ANBGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 

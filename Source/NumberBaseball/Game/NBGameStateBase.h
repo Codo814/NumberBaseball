@@ -6,7 +6,7 @@
 #include "NBGameStateBase.generated.h"
 
 UCLASS()
-class CHATX_API ANBGameStateBase : public AGameStateBase
+class NUMBERBASEBALL_API ANBGameStateBase : public AGameStateBase
 {
 	GENERATED_BODY()
 

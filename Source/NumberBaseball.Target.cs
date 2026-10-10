@@ -3,13 +3,13 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class ChatXEditorTarget : TargetRules
+public class NumberBaseballTarget : TargetRules
 {
-	public ChatXEditorTarget( TargetInfo Target) : base(Target)
+	public NumberBaseballTarget(TargetInfo Target) : base(Target)
 	{
-		Type = TargetType.Editor;
+		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_5;
-		ExtraModuleNames.Add("ChatX");
+		ExtraModuleNames.Add("NumberBaseball");
 	}
 }

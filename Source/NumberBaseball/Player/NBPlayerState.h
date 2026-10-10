@@ -10,7 +10,7 @@
  *
  */
 UCLASS()
-class CHATX_API ANBPlayerState : public APlayerState
+class NUMBERBASEBALL_API ANBPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 

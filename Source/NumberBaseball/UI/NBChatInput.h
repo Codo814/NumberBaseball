@@ -13,7 +13,7 @@ class UEditableTextBox;
  *
  */
 UCLASS()
-class CHATX_API UNBChatInput : public UUserWidget
+class NUMBERBASEBALL_API UNBChatInput : public UUserWidget
 {
 	GENERATED_BODY()
 

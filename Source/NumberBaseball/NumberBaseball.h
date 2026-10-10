@@ -1,10 +1,10 @@
-// ChatX.h
+// NumberBaseball.h
 
 #pragma once
 
 #include "CoreMinimal.h"
 
-class ChatXFunctionLibrary
+class NumberBaseballFunctionLibrary
 {
 public:
 	static void MyPrintString(const AActor* InWorldContextActor, const FString& InString, float InTimeToDisplay = 1.f, FColor InColor = FColor::Cyan)

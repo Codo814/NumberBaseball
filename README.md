@@ -14,16 +14,16 @@ Unreal Engine 5.5와 C++로 만드는 멀티플레이 채팅 숫자야구 학습
 ## 실행
 
 1. Unreal Engine 5.5와 Visual Studio C++ 개발 도구를 설치합니다.
-2. `ChatX.uproject`에서 Visual Studio 프로젝트 파일을 생성합니다.
-3. `ChatXEditor`를 Development Editor / Win64로 빌드합니다.
+2. `NumberBaseball.uproject`에서 Visual Studio 프로젝트 파일을 생성합니다.
+3. `NumberBaseballEditor`를 Development Editor / Win64로 빌드합니다.
 4. 에디터에서 `Content/ChatX/Maps/Chatting` 맵을 엽니다.
 5. 멀티플레이 PIE에서 채팅과 판정 결과를 확인합니다.
 
 ## 구성
 
-- `Source/ChatX/Game`: 서버 판정과 게임 상태
-- `Source/ChatX/Player`: 플레이어 컨트롤러와 RPC
-- `Source/ChatX/UI`: 채팅 입력 위젯
+- `Source/NumberBaseball/Game`: 서버 판정과 게임 상태
+- `Source/NumberBaseball/Player`: 플레이어 컨트롤러와 RPC
+- `Source/NumberBaseball/UI`: 채팅 입력 위젯
 - `Content`: Blueprint와 맵
 - `Config`: 프로젝트 설정
 

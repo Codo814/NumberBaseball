@@ -6,7 +6,7 @@
 #include "Game/NBGameModeBase.h"
 #include "NBPlayerState.h"
 #include "UI/NBChatInput.h"
-#include "ChatX.h"
+#include "NumberBaseball.h"
 #include "Net/UnrealNetwork.h"
 #include "EngineUtils.h"
 
@@ -70,9 +70,9 @@ void ANBPlayerController::PrintChatMessageString(const FString& InChatMessageStr
 {
 	//UKismetSystemLibrary::PrintString(this, chatMessageString, true, true, FLinearColor::Red, 5.0f);
 
-	FString NetModeString = ChatXFunctionLibrary::GetNetModeString(this);
+	FString NetModeString = NumberBaseballFunctionLibrary::GetNetModeString(this);
 	FString CombinedMessageString = FString::Printf(TEXT("%s, %s"), *NetModeString, *InChatMessageString);
-	ChatXFunctionLibrary::MyPrintString(this, CombinedMessageString, 10.f);
+	NumberBaseballFunctionLibrary::MyPrintString(this, CombinedMessageString, 10.f);
 
 }
 

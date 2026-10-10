@@ -12,7 +12,7 @@ class UNBChatInput;
  *
  */
 UCLASS()
-class CHATX_API ANBPlayerController : public APlayerController
+class NUMBERBASEBALL_API ANBPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
