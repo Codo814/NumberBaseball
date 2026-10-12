@@ -6,6 +6,7 @@
 #include "Game/NBGameModeBase.h"
 #include "NBPlayerState.h"
 #include "UI/NBChatInput.h"
+#include "UI/NBNotificationText.h"
 #include "NumberBaseball.h"
 #include "Net/UnrealNetwork.h"
 #include "EngineUtils.h"
@@ -36,36 +37,29 @@ void ANBPlayerController::BeginPlay()
 		}
 	}
 
-	if (IsValid(NotificationTextWidgetClass) == true)
+	// 기본 공지 위젯을 C++로 생성하여 Blueprint 텍스트 바인딩 없이 결과를 표시
+	TSubclassOf<UUserWidget> WidgetClass = UNBNotificationText::StaticClass();
+	if (NotificationTextWidgetClass != nullptr && NotificationTextWidgetClass->IsChildOf(UNBNotificationText::StaticClass()))
 	{
-		NotificationTextWidgetInstance = CreateWidget<UUserWidget>(this, NotificationTextWidgetClass);
-		if (IsValid(NotificationTextWidgetInstance) == true)
-		{
-			NotificationTextWidgetInstance->AddToViewport();
-		}
+		WidgetClass = NotificationTextWidgetClass;
+	}
+	NotificationTextWidgetInstance = CreateWidget<UUserWidget>(this, WidgetClass);
+	if (IsValid(NotificationTextWidgetInstance) == true)
+	{
+		NotificationTextWidgetInstance->AddToViewport(10);
+		OnRepNotificationText();
 	}
 }
 
 void ANBPlayerController::SetChatMessageString(const FString& InChatMessageString)
 {
 	ChatMessageString = InChatMessageString;
-
-	//PrintChatMessageString(InChatMessageString);
+	// 이름과 횟수를 붙이지 않고 원본 입력을 서버로 보내 전체 문자열을 검사
 	if (IsLocalController() == true)
 	{
-		// ServerRPCPrintChatMessageString(InChatMessageString);
-
-		ANBPlayerState* NBPS = GetPlayerState<ANBPlayerState>();
-		if (IsValid(NBPS) == true)
-		{
-			//FString CombinedMessageString = NBPS->PlayerNameString + TEXT(": ") + InChatMessageString;
-			FString CombinedMessageString = NBPS->GetPlayerInfoString() + TEXT(": ") + InChatMessageString;
-
-			ServerRPCPrintChatMessageString(CombinedMessageString);
-		}
+		ServerRPCPrintChatMessageString(InChatMessageString);
 	}
 }
-
 void ANBPlayerController::PrintChatMessageString(const FString& InChatMessageString)
 {
 	//UKismetSystemLibrary::PrintString(this, chatMessageString, true, true, FLinearColor::Red, 5.0f);
@@ -84,22 +78,33 @@ void ANBPlayerController::ClientRPCPrintChatMessageString_Implementation(const F
 
 void ANBPlayerController::ServerRPCPrintChatMessageString_Implementation(const FString& InChatMessageString)
 {
-		//for (TActorIterator<ANBPlayerController> It(GetWorld()); It; ++It)
-		//{
-		//	ANBPlayerController* NBPlayerController = *It;
-		//	if (IsValid(NBPlayerController) == true)
-		//	{
-		//		NBPlayerController->ClientRPCPrintChatMessageString(InChatMessageString);
-		//	}
-		//}
-		AGameModeBase * GM = UGameplayStatics::GetGameMode(this);
-	if (IsValid(GM) == true)
+	// 판정과 기회 관리는 서버의 GameMode에 맡김
+	ANBGameModeBase* NBGM = Cast<ANBGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (IsValid(NBGM) == true)
 	{
-		ANBGameModeBase* NBGM = Cast<ANBGameModeBase>(GM);
-		if (IsValid(NBGM) == true)
-		{
-			NBGM->PrintChatMessageString(this, InChatMessageString);
-		}
+		NBGM->PrintChatMessageString(this, InChatMessageString);
+	}
+}
+
+void ANBPlayerController::SetNotificationText(const FText& InNotificationText)
+{
+	// 서버에서 공지 값을 변경하고 리슨 서버 화면도 즉시 갱신
+	if (HasAuthority() == true)
+	{
+		NotificationText = InNotificationText;
+		OnRepNotificationText();
+		ForceNetUpdate();
+	}
+}
+
+
+inline void ANBPlayerController::OnRepNotificationText()
+{
+	// 복제된 공지를 소유 클라이언트의 위젯에 적용
+	UNBNotificationText* NotificationWidget = Cast<UNBNotificationText>(NotificationTextWidgetInstance);
+	if (IsValid(NotificationWidget) == true)
+	{
+		NotificationWidget->SetNotificationText(NotificationText);
 	}
 }
 

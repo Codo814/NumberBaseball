@@ -22,6 +22,7 @@ void ANBPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 
 FString ANBPlayerState::GetPlayerInfoString()
 {
-	FString PlayerInfoString = PlayerNameString + TEXT("(") + FString::FromInt(CurrentGuessCount) + TEXT("/") + FString::FromInt(MaxGuessCount) + TEXT(")");
+	// 서버에서 갱신된 현재 횟수와 최대 횟수를 출력용 문자열로 반환
+	FString PlayerInfoString = PlayerNameString + TEXT("[") + FString::FromInt(CurrentGuessCount) + TEXT("/") + FString::FromInt(MaxGuessCount) + TEXT("]");
 	return PlayerInfoString;
 }

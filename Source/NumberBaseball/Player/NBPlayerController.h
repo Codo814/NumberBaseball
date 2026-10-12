@@ -49,7 +49,12 @@ protected:
 	TObjectPtr<UUserWidget> NotificationTextWidgetInstance;
 
 public:
-	UPROPERTY(Replicated, BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing = OnRepNotificationText, BlueprintReadOnly)
 	FText NotificationText;
+
+	void SetNotificationText(const FText& InNotificationText);
+
+	UFUNCTION()
+	void OnRepNotificationText();
 
 };
