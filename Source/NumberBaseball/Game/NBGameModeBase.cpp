@@ -214,7 +214,7 @@ void ANBGameModeBase::ResetGame()
 		{
 			NBPS->CurrentGuessCount = 0;
 		}
-		NBPlayerController->SetNotificationText(FText::FromString(TEXT("새 게임 시작! 숫자 3자리를 입력하세요. [0/3]")));
+		NBPlayerController->SetNotificationText(FText::FromString(TEXT("새 게임 시작! 숫자 3자리를 입력하세요.")));
 	}
 }
 
